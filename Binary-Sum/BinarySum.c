@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 //Calcola la somma binaria in colonna di due numeri interi mediante lo scorrimento binario.
 //Considera anche il riporto dei bit più significativi.
@@ -82,7 +81,7 @@ int defactorize(int *bits, int length)
 {
 	int number = 0;//Numero convertito da base 2 a base decimale.
 	//Moltiplico ogni cifra binaria per la relativa potenza di due a esponente decrescente.
-	for (int i = 0, e = length - 1; e > 0; number += bits[i] * power(2, e), e--, i++);
+	for (int i = 0, e = length - 1; e >= 0; number += bits[i] * power(2, e), e--, i++);
 	return number;//Ritorno il numero convertito.
 }
 
@@ -215,43 +214,29 @@ int binary_sum_factorization(int a, int b)
 		}
 	}
 
+	//Libero le risorse.
+	free(a_bits);
+	free(b_bits);
+
 	//Nel caso sia rimasto un riporto di overflow.
 	if (carry_over)
 	{
 		//Inserisco il riporto nell'ultima posizione.
 		sum_bits[(max_length - 1)] = carry_over;
 	}
+	else
+	{
+		sum_bits = (int *)realloc(sum_bits, sizeof(int)* (max_length - 1));
+		max_length--;
+	}
 
 	//Inverto la somma dei bit per la successiva conversione.
 	reverse(sum_bits, max_length);
+	//Converto la somma in base decimale.
+	int sum = defactorize(sum_bits, max_length);
 
-	//Ritorno la somma convertita in base decimale.
-	return defactorize(sum_bits, max_length);
-}
-
-
-int main()
-{
-	//Eseguo alcuni test di velocità per stabilire quale metodo sia più performante.
-	time_t start = time(NULL);
-	for (int i = 0; i < 1000000; i++)
-	{
-		binary_sum_shift(10, 50);
-	}
-	time_t end = time(NULL);
-
-	printf("Binary sum shift: %f", difftime(end, start));
-	printf("\r\n");
-
-	start = time(NULL);
-	for (int i = 0; i < 1000000; i++)
-	{
-		binary_sum_factorization(10, 50);
-	}
-	end = time(NULL);
-
-	printf("Binary sum factorization: %f", difftime(end, start));
-	getchar();
-
-	return 0;
+	//Libero le risorse.
+	free(sum_bits);
+	
+	return sum;
 }
